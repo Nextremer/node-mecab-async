@@ -1,4 +1,4 @@
-const exec     = require('child_process').exec;
+const spawn    = require('child_process').spawn;
 const execSync = require('child_process').execSync;
 const sq       = require('shell-quote');
 
@@ -45,11 +45,20 @@ MeCab.prototype = {
         });
     },
     parse : function(str, callback) {
-        process.nextTick(() => { // for bug
-            exec(this._shellCommand(str), this.options, (err, result) => {
-                if (err) { return callback(err); }
-                callback(err, this._parseMeCabResult(result).slice(0, -2));
-            });
+        var mecab = spawn(this.command);
+        var result = '';
+        var err = '';
+        mecab.stdin.write(str);
+        mecab.stdin.end();
+        mecab.stdout.on('data', (data) => {
+            result += data;
+        });
+        mecab.stderr.on('data', (data) => {
+            err += data;
+        });
+        mecab.on('close', (code) => {
+            if (code !== 0) { return callback(err); }
+            callback(null, this._parseMeCabResult(result).slice(0, -2));
         });
     },
     parseSync : function(str) {
