@@ -48,6 +48,9 @@ MeCab.prototype = {
         var mecab = spawn(this.command);
         var result = '';
         var err = '';
+        mecab.stdin.setEncoding('utf8');
+        mecab.stdout.setEncoding('utf8');
+        mecab.stderr.setEncoding('utf8');
         mecab.stdin.write(str);
         mecab.stdin.end();
         mecab.stdout.on('data', (data) => {
